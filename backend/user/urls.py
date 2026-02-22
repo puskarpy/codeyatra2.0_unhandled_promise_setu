@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import RegisterUserView, UserListView, UserDetailView, PhoneLoginView
+from .views import RegisterUserView, UserListView, UserDetailView, PhoneLoginView, SendOTPView, VerifyOTPView, ProfileView
 
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
@@ -10,7 +10,10 @@ urlpatterns = [
     path('register/', RegisterUserView.as_view(), name='register'),
     path('users/', UserListView.as_view(), name='user-list'),
     path('users/<int:pk>/', UserDetailView.as_view(), name='user-detail'),
-    path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
-    path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
-    path('api/login/', PhoneLoginView.as_view(), name='phone_login'),
+    path('token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    path('login/', PhoneLoginView.as_view(), name='phone_login'),
+    path('send-otp/', SendOTPView.as_view()),
+    path('verify-otp/', VerifyOTPView.as_view()),
+    path('profile/', ProfileView.as_view()),
 ]
