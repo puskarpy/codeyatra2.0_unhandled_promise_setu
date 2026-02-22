@@ -44,6 +44,8 @@ INSTALLED_APPS = [
     'services',
     'guided_forms',
     'feedback',
+    'document_scanner',
+    
 ]
 
 MIDDLEWARE = [

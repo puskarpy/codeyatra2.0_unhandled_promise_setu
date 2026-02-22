@@ -23,4 +23,5 @@ urlpatterns = [
     path('api/services/', include('services.urls')),
     path('api/forms/', include('guided_forms.urls')),
     path('api/feedback/', include('feedback.urls')),
+    path('api/documents/', include('document_scanner.urls')),
 ]

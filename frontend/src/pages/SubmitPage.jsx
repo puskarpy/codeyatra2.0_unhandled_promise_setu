@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import axios from "../api";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -29,37 +29,66 @@ export default function SubmitPage() {
     files: [],
   });
   const [submitted, setSubmitted] = useState(false);
+  const [scanResult, setScanResult] = useState(null);
+  const [viewMockForm, setViewMockForm] = useState(false);
+  const fileInputRef = useRef();
+  const [imagePreviewUrl, setImagePreviewUrl] = useState(null);
 
   const updateField = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
-  const handleSubmit = async () => {
+  // Handles file upload and document scan
+  const handleFileChange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    updateField("files", [file]);
+    setScanResult(null);
+    // Set image preview if file is image
+    if (file.type.startsWith("image/")) {
+      setImagePreviewUrl(URL.createObjectURL(file));
+    } else {
+      setImagePreviewUrl(null);
+    }
+    // Scan document immediately after file selection
     const token = localStorage.getItem("access");
     const formDataObj = new FormData();
-    formDataObj.append("service", formData.service);
-    formDataObj.append("fullName", formData.fullName);
-    formDataObj.append("email", formData.email);
-    formDataObj.append("phone", formData.phone);
-    formDataObj.append("address", formData.address);
-    formDataObj.append("message", formData.message);
-    formData.files.forEach((file, idx) => {
-      formDataObj.append(`file_${idx}`, file);
-    });
+    formDataObj.append("file", file);
     try {
-      await axios.post("/api/forms/submissions/", formDataObj, {
+      const res = await axios.post("/api/documents/scan/", formDataObj, {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "multipart/form-data",
         },
       });
-      setSubmitted(true);
+      setScanResult(res.data);
+      // Mock autofill: try to fill form fields from OCR result
+      let ocrText = "";
+      if (typeof res.data === "string") {
+        ocrText = res.data;
+      } else if (res.data && res.data.extracted_data) {
+        ocrText = JSON.stringify(res.data.extracted_data);
+      }
+      if (ocrText) {
+        // Example: try to extract name, email, phone from OCR text
+        const nameMatch = ocrText.match(/Name[:\s]+([A-Za-z ]+)/i);
+        const emailMatch = ocrText.match(/Email[:\s]+([\w.-]+@[\w.-]+)/i);
+        const phoneMatch = ocrText.match(/Phone[:\s]+([+\d-]+)/i);
+        updateField("fullName", nameMatch ? nameMatch[1].trim() : "");
+        updateField("email", emailMatch ? emailMatch[1].trim() : "");
+        updateField("phone", phoneMatch ? phoneMatch[1].trim() : "");
+      }
     } catch (err) {
-      alert("Submission failed: " + (err.response?.data?.detail || err.message));
+      setScanResult({ error: err.response?.data?.detail || err.message });
     }
   };
 
-  if (submitted) {
+  // Handles final form submission (mock)
+  const handleSubmit = async () => {
+    setSubmitted(true);
+  };
+
+  if (submitted && !viewMockForm) {
     return (
       <div className="section-container py-16 text-center animate-fade-in">
         <div className="max-w-md mx-auto">
@@ -73,6 +102,37 @@ export default function SubmitPage() {
           <p className="text-lg font-mono font-bold text-primary mb-6">SETU-2026-00421</p>
           <Button onClick={() => { setSubmitted(false); setStep(0); }} variant="outline">
             Submit Another Application
+          </Button>
+          <Button onClick={() => setViewMockForm(true)} variant="secondary" className="ml-2">
+            View Mock Form
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  if (viewMockForm) {
+    return (
+      <div className="section-container py-16 animate-fade-in">
+        <div className="max-w-lg mx-auto bg-white rounded shadow p-8">
+          <h2 className="text-2xl font-bold mb-6">Mock Form Data</h2>
+          <div className="space-y-4">
+            <div><b>Service:</b> {formData.service || "—"}</div>
+            <div><b>Full Name:</b> {formData.fullName || "—"}</div>
+            <div><b>Email:</b> {formData.email || "—"}</div>
+            <div><b>Phone:</b> {formData.phone || "—"}</div>
+            <div><b>Address:</b> {formData.address || "—"}</div>
+            <div><b>Additional Notes:</b> {formData.message || "—"}</div>
+            <div><b>Uploaded File:</b> {formData.files.length > 0 ? formData.files[0].name : "—"}</div>
+            {imagePreviewUrl && (
+              <div className="mt-4">
+                <b>Image Preview:</b>
+                <img src={imagePreviewUrl} alt="Uploaded Preview" style={{ maxWidth: "100%", borderRadius: "8px", marginTop: "8px" }} />
+              </div>
+            )}
+          </div>
+          <Button onClick={() => { setViewMockForm(false); setSubmitted(false); setStep(0); }} variant="outline" className="mt-6">
+            Back to Form
           </Button>
         </div>
       </div>
@@ -164,15 +224,49 @@ export default function SubmitPage() {
               <div className="space-y-4">
                 <div className="border-2 border-dashed border-border rounded-xl p-8 text-center">
                   <Upload className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
-                  <p className="font-medium mb-1">Upload Documents</p>
+                  <p className="font-medium mb-1">Upload Document</p>
                   <p className="text-sm text-muted-foreground mb-4">
                     Drag & drop or click to upload (PDF, JPG, PNG up to 10MB)
                   </p>
-                  <Button variant="outline" size="sm">
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept=".pdf,image/*"
+                    style={{ display: "none" }}
+                    onChange={handleFileChange}
+                  />
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => fileInputRef.current && fileInputRef.current.click()}
+                  >
                     <FileText className="h-4 w-4 mr-2" />
                     Browse Files
                   </Button>
+                  {formData.files.length > 0 && (
+                    <div className="mt-2 text-xs text-muted-foreground">
+                      Selected: {formData.files[0].name}
+                    </div>
+                  )}
+                  <div className="mt-4 text-xs text-warning-foreground">
+                    <b>Note:</b> If submitting a <b>citizenship certificate</b>, both the front and back must be in the <b>same image</b>.
+                  </div>
                 </div>
+                {scanResult && (
+                  <div className="mt-4 p-4 rounded bg-muted/50 text-left">
+                    {scanResult.error ? (
+                      <div className="text-red-600">{scanResult.error}</div>
+                    ) : (
+                      <>
+                        <div className="font-semibold mb-2">Extracted Data:</div>
+                        <pre className="text-xs whitespace-pre-wrap break-all bg-background p-2 rounded border border-border">
+                          {JSON.stringify(scanResult.extracted_data, null, 2)}
+                        </pre>
+                        <div className="font-semibold mt-2">Document Type: <span className="capitalize">{scanResult.document_type}</span></div>
+                      </>
+                    )}
+                  </div>
+                )}
                 <p className="text-xs text-muted-foreground">
                   Required: Citizenship copy, recent passport-size photo, supporting documents.
                 </p>
