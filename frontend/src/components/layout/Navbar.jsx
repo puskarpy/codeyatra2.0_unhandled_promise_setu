@@ -13,6 +13,7 @@ const navItems = [
   { title: "Submit Application", href: "/submit", icon: FileText },
   { title: "Government Portals", href: "/portals", icon: Link2 },
   { title: "Profile", href: "/profile", icon: User },
+  { title: "Guide", href: "/guide", icon: FileText },
 ];
 
 export function Navbar() {
