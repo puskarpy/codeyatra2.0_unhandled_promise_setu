@@ -34,7 +34,7 @@ export default function AuthPage() {
             Your gateway to Nepal's government services
           </h2>
           <p className="text-primary-foreground/70 text-lg leading-relaxed">
-            One secure portal to check eligibility, submit applications, 
+            One secure portal to book appointments, submit applications, 
             and access all government services across Nepal.
           </p>
         </div>

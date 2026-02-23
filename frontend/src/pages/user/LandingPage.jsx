@@ -13,8 +13,8 @@ const services = [
   },
   {
     icon: CheckSquare,
-    title: "Eligibility Checker",
-    description: "Instantly check your eligibility for government schemes and services.",
+    title: "Book Appointment",
+    description: "Schedule appointments for government services at your preferred office and time.",
   },
   {
     icon: Building2,
