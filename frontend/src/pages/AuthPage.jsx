@@ -12,6 +12,7 @@ export default function AuthPage() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    
     window.location.href = "/dashboard";
   };
 
