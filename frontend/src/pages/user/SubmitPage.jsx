@@ -8,6 +8,7 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue 
 } from "@/components/ui/select";
 import { CheckCircle2, Upload, ArrowLeft, ArrowRight, FileText } from "lucide-react";
+import React from "react";
 
 const steps = [
   { title: "Service Selection", description: "Choose the service you need" },

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { ExternalLink, Search } from "lucide-react";
+import React from "react";
 
 const portals = [
   { name: "Department of Passports", url: "https://nepalpassport.gov.np", category: "Immigration", description: "Apply for and renew passports online." },

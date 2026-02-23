@@ -4,6 +4,7 @@ import {
   Shield, FileText, CheckSquare, ArrowRight, 
   Building2, Users, Clock, Zap, Globe, Star
 } from "lucide-react";
+import React from "react";
 
 const services = [
   {

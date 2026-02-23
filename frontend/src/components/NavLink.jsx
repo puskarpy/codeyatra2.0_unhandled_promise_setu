@@ -1,6 +1,7 @@
 import { NavLink as RouterNavLink } from "react-router-dom";
 import { forwardRef } from "react";
 import { cn } from "@/lib/utils";
+import React from "react";
 
 const NavLink = forwardRef(({ className, activeClassName, pendingClassName, to, ...props }, ref) => {
   return (

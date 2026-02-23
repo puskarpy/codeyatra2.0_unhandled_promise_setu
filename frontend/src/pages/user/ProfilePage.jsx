@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { User, Mail, Phone, MapPin, CreditCard, Save } from "lucide-react";
+import React from "react";
 
 export default function ProfilePage() {
   const [profile, setProfile] = useState({
