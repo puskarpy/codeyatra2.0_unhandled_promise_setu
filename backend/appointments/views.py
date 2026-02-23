@@ -1,9 +1,9 @@
 from rest_framework import viewsets, status
+from rest_framework.views import APIView
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from django.shortcuts import get_object_or_404, render
-from django.views import View
 from .models import Appointment
 from .serializers import AppointmentSerializer, AppointmentCreateSerializer
 from .services.qr_service import generate_qr_code
@@ -95,16 +95,3 @@ class AppointmentViewSet(viewsets.ModelViewSet):
             {'detail': 'Use /api/appointments/list_all/ for admin view.'}, 
             status=status.HTTP_403_FORBIDDEN
         )
-
-
-class AppointmentFormView(View):
-    """Serve appointment booking form page"""
-    def get(self, request):
-        return render(request, 'appointment_form.html')
-
-
-class AdminDashboardView(View):
-    """Serve admin dashboard page"""
-    def get(self, request):
-        return render(request, 'admin_dashboard.html')
-
