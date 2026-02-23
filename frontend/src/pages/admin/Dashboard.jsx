@@ -48,6 +48,7 @@ const quickActions = [
   { title: "Manage Users", href: "/admin/users", icon: Users, color: "bg-primary/10 text-primary" },
   { title: "Manage Forms", href: "/admin/forms", icon: FileText, color: "bg-info/10 text-info" },
   { title: "Manage Applications", href: "/admin/applications", icon: FileCheck, color: "bg-success/10 text-success" },
+  { title: "Manage Appointments", href: "/admin/appointments", icon: Clock, color: "bg-accent/10 text-accent" },
   { title: "Manage Portals", href: "/admin/portals", icon: Link2, color: "bg-accent/10 text-accent" },
   { title: "Manage Schemes", href: "/admin/schemes", icon: CheckSquare, color: "bg-warning/10 text-warning" },
   { title: "Analytics", href: "/admin/analytics", icon: BarChart3, color: "bg-primary/10 text-primary" },

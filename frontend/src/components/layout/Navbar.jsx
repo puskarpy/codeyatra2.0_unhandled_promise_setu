@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 
 const navItems = [
   { title: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-  { title: "Eligibility Checker", href: "/eligibility", icon: CheckSquare },
+  { title: "Book Appointment", href: "/appointment", icon: CheckSquare },
   { title: "Submit Application", href: "/submit", icon: FileText },
   { title: "Government Portals", href: "/portals", icon: Link2 },
   { title: "Profile", href: "/profile", icon: User },
