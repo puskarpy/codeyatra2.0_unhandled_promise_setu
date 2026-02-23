@@ -8,13 +8,7 @@ import { User, Mail, Phone, MapPin, CreditCard, Save } from "lucide-react";
 import React from "react";
 
 export default function ProfilePage() {
-  const [profile, setProfile] = useState({
-    fullName: "Ram Sharma",
-    email: "ram.sharma@example.com",
-    phone: "+977-9841234567",
-    district: "Kathmandu",
-    citizenshipNo: "01-01-76-12345",
-  });
+  const profileData = JSON.parse(localStorage.getItem("user"))
 
   const updateField = (field, value) => {
     setProfile((prev) => ({ ...prev, [field]: value }));
@@ -34,8 +28,8 @@ export default function ProfilePage() {
               RS
             </div>
             <div>
-              <h2 className="text-xl font-bold">{profile.fullName}</h2>
-              <p className="text-sm text-muted-foreground">{profile.email}</p>
+              <h2 className="text-xl font-bold">{profileData.username}</h2>
+              <p className="text-sm text-muted-foreground">{profileData.email || ""}</p>
               <div className="badge-status bg-success/10 text-success mt-1">Verified Citizen</div>
             </div>
           </CardContent>
@@ -49,26 +43,26 @@ export default function ProfilePage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label className="flex items-center gap-2"><User className="h-3.5 w-3.5" />Full Name</Label>
-                <Input value={profile.fullName} onChange={(e) => updateField("fullName", e.target.value)} />
+                <Input value={profileData.fullName || "N/A"} onChange={(e) => updateField("fullName", e.target.value)} />
               </div>
               <div className="space-y-2">
                 <Label className="flex items-center gap-2"><Mail className="h-3.5 w-3.5" />Email</Label>
-                <Input type="email" value={profile.email} onChange={(e) => updateField("email", e.target.value)} />
+                <Input type="email" value={profileData.email || "N/A"} onChange={(e) => updateField("email", e.target.value)} />
               </div>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label className="flex items-center gap-2"><Phone className="h-3.5 w-3.5" />Phone</Label>
-                <Input type="tel" value={profile.phone} onChange={(e) => updateField("phone", e.target.value)} />
+                <Input type="tel" value={profileData.phone || "N/A"} onChange={(e) => updateField("phone", e.target.value)} />
               </div>
               <div className="space-y-2">
                 <Label className="flex items-center gap-2"><MapPin className="h-3.5 w-3.5" />District</Label>
-                <Input value={profile.district} onChange={(e) => updateField("district", e.target.value)} />
+                <Input value={profileData.district || "N/A"} onChange={(e) => updateField("district", e.target.value)} />
               </div>
             </div>
             <div className="space-y-2">
               <Label className="flex items-center gap-2"><CreditCard className="h-3.5 w-3.5" />Citizenship Number</Label>
-              <Input value={profile.citizenshipNo} onChange={(e) => updateField("citizenshipNo", e.target.value)} />
+              <Input value={profileData.citizenshipNo || "N/A"} onChange={(e) => updateField("citizenshipNo", e.target.value)} />
             </div>
 
             <Separator />

@@ -6,14 +6,15 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import  Navbar  from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
-import LandingPage from "./pages/LandingPage";
-import AuthPage from "./pages/AuthPage";
-import DashboardPage from "./pages/DashboardPage";
-import EligibilityPage from "./pages/EligibilityPage";
-import SubmitPage from "./pages/SubmitPage";
-import PortalsPage from "./pages/PortalsPage";
-import ProfilePage from "./pages/ProfilePage";
-import NotFound from "./pages/NotFound";
+
+import {SubmitPage, PortalsPage, ProfilePage, AuthPage, 
+        LandingPage, DashboardPage, NotFound, GuideSelectionPage, 
+        InteractiveGuide, BookAppointmentPage} 
+        from "./pages/user/index.js"
+
+import {Analytics, Dashboard, ManageApplications, ManageUsers, 
+        ManageAppointments, ManageForms, ManagePortals, 
+        ManageSchemes, Settings} from './pages/admin/index.js'
 
 const queryClient = new QueryClient();
 
@@ -33,17 +34,17 @@ const App = () => (
               
               {/* User Routes */}
               <Route path="/dashboard" element={<DashboardPage />} />
-              <Route path="/appointment" element={<BookAppointmentPage />} />
               <Route path="/submit" element={<SubmitPage />} />
               <Route path="/profile" element={<ProfilePage />} />
               <Route path="/portals" element={<PortalsPage />} />
+              <Route path="/appointment" element={<BookAppointmentPage/>}/>
               <Route path="/guide" element={<GuideSelectionPage />} />
               <Route path="/guide/citizenship" element={<InteractiveGuide formName="Citizenship Form" />} />
               <Route path="/guide/passport" element={<InteractiveGuide formName="Passport Form" />} />
               <Route path="/guide/license" element={<InteractiveGuide formName="Driving License Form" />} />
               
               {/* Admin Routes */}
-              <Route path="/admin/dashboard" element={<AdminDashboard />} />
+              <Route path="/admin/dashboard" element={<Dashboard />} />
               <Route path="/admin/users" element={<ManageUsers />} />
               <Route path="/admin/forms" element={<ManageForms />} />
               <Route path="/admin/applications" element={<ManageApplications />} />

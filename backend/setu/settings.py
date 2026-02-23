@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
 from pathlib import Path
+from datetime import timedelta
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -37,13 +38,6 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-<<<<<<< HEAD
-    'user',
-    'applications',
-    'services',
-    'guided_forms',
-    'rest_framework'
-=======
     'rest_framework',
     'rest_framework_simplejwt',
     'corsheaders',
@@ -53,7 +47,6 @@ INSTALLED_APPS = [
     'feedback',
     'document_scanner',
     
->>>>>>> origin/sujan
 ]
 
 REST_FRAMEWORK = {
@@ -141,9 +134,6 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 
-<<<<<<< HEAD
-AUTH_USER_MODEL = 'user.User'
-=======
 # Custom user model
 # Custom user model
 AUTH_USER_MODEL = 'user.User'
@@ -158,6 +148,11 @@ REST_FRAMEWORK = {
     ),
 }
 
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
+    'AUTH_HEADER_TYPES': ('Bearer',),
+}
+
 # CORS settings
 CORS_ALLOW_ALL_ORIGINS = True
->>>>>>> origin/sujan

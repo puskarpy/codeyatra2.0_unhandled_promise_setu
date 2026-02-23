@@ -19,13 +19,9 @@ from django.urls import path, include
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-<<<<<<< HEAD
-    path('api/', include("user.urls"))
-=======
     path('api/user/', include('user.urls')),
     path('api/services/', include('services.urls')),
     path('api/forms/', include('guided_forms.urls')),
     path('api/feedback/', include('feedback.urls')),
     path('api/documents/', include('document_scanner.urls')),
->>>>>>> origin/sujan
 ]

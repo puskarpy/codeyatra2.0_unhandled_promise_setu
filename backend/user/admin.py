@@ -1,10 +1,4 @@
 from django.contrib import admin
-<<<<<<< HEAD
-from .models import User
-# Register your models here.
-
-admin.site.register(User)
-=======
 from .models import User, OTP, LoginAttempt
 
 @admin.register(User)
@@ -24,4 +18,3 @@ class LoginAttemptAdmin(admin.ModelAdmin):
 	list_display = ('id', 'user', 'timestamp', 'successful')
 	search_fields = ('user__phone',)
 	list_filter = ('successful',)
->>>>>>> origin/sujan

@@ -19,6 +19,7 @@ const navItems = [
 
 export function Navbar() {
   const location = useLocation();
+  const navigate = useNavigate()
   const [mobileOpen, setMobileOpen] = useState(false);
   const isAuth = location.pathname === "/auth";
   const isLanding = location.pathname === "/";
@@ -30,6 +31,7 @@ export function Navbar() {
   const handleLogout = () => {
     localStorage.removeItem("access");
     localStorage.removeItem("refresh");
+    localStorage.removeItem("user");
     navigate("/auth");
   };
 

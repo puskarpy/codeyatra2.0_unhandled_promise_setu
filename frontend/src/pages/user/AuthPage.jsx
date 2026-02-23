@@ -1,25 +1,87 @@
-import { useState } from "react";
-import React from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import React, { useState } from "react";
+import { Link, useSearchParams, useNavigate } from "react-router-dom";
+import axios from "axios";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Eye, EyeOff, ArrowLeft } from "lucide-react";
-
 export default function AuthPage() {
+
+  const navigate = useNavigate()
   const [searchParams] = useSearchParams();
   const [isRegister, setIsRegister] = useState(searchParams.get("register") === "true");
   const [showPassword, setShowPassword] = useState(false);
 
-  const handleSubmit = (e) => {
+  // Form state
+  const [formData, setFormData] = useState({
+    firstName: "",
+    lastName: "",
+    username: "",
+    email: "",
+    phone: "",
+    password: "",
+    citizenshipNo: "",
+  });
+
+  // Handle input change
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.id]: e.target.value });
+  };
+
+  // Handle form submit
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    window.location.href = "/dashboard";
+
+    try {
+      if (isRegister) {
+        // Register request
+        const { data } = await axios.post("http://localhost:8000/api/user/register/", {
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          username: formData.username,
+          email: formData.email,
+          phone: formData.phone,
+          password: formData.password,
+          citizenshipNo: formData.citizenshipNo,
+        });
+        console.log("Registered:", data);
+        
+        const data1 = await axios.post("http://localhost:8000/api/user/login/", {
+          phone: formData.phone,
+          password: formData.password,
+        });
+        
+        
+        localStorage.setItem("access", data1.data.access)
+        localStorage.setItem("refresh", data1.data.refresh)
+        localStorage.setItem("user", JSON.stringify({...data1.data.user, full_name:formData.firstName + " " + formData.lastName}))
+        console.log("Logged in:", data1);
+
+      } else {
+        // Login request
+        const { data } = await axios.post("http://localhost:8000/api/user/login/", {
+          phone: formData.phone,
+          password: formData.password,
+        });
+        console.log("Logged in:", data);
+
+        localStorage.setItem("access", data.access)
+        localStorage.setItem("refresh", data.refresh)
+        localStorage.setItem("user", JSON.stringify({...data.user, 
+          full_name: formData.firstName + " " + formData.lastName}))
+        }
+        
+
+      // Redirect to dashboard
+      navigate("/dashboard");
+    } catch (err) {
+      console.error(err);
+      alert(err.response?.data?.message || "Something went wrong!");
+    }
   };
 
   return (
     <div className="min-h-screen flex">
-      {/* Left Panel */}
       <div className="hidden lg:flex lg:w-1/2 hero-gradient relative items-center justify-center p-12">
         <div className="relative max-w-md text-primary-foreground">
           <Link to="/" className="inline-flex items-center gap-2 mb-12 text-primary-foreground/80 hover:text-primary-foreground transition-colors">
@@ -42,7 +104,6 @@ export default function AuthPage() {
         </div>
       </div>
 
-      {/* Right Panel - Form */}
       <div className="flex-1 flex items-center justify-center p-6 md:p-12 bg-background">
         <div className="w-full max-w-md">
           <div className="lg:hidden mb-8">
@@ -68,25 +129,31 @@ export default function AuthPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="firstName">First Name</Label>
-                  <Input id="firstName" placeholder="Ram" required />
+                  <Input id="firstName" value={formData.firstName} onChange={handleChange} placeholder="Ram" required />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="lastName">Last Name</Label>
-                  <Input id="lastName" placeholder="Sharma" required />
+                  <Input id="lastName" value={formData.lastName} onChange={handleChange} placeholder="Sharma" required />
                 </div>
               </div>
             )}
 
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input id="email" type="email" placeholder="you@example.com" required />
-            </div>
-
             {isRegister && (
               <div className="space-y-2">
+              <Label htmlFor="email">Username</Label>
+              <Input id="username" type="text" value={formData.username} onChange={handleChange} placeholder="john26" required />
+            </div>
+            )}
+
+            <div className="space-y-2">
                 <Label htmlFor="phone">Phone Number</Label>
-                <Input id="phone" type="tel" placeholder="+977-98XXXXXXXX" />
+                <Input id="phone" type="tel" value={formData.phone} onChange={handleChange} placeholder="+977-98XXXXXXXX" required />
               </div>
+            {isRegister && (
+              <div className="space-y-2">
+              <Label htmlFor="email">Email (Optional)</Label>
+              <Input id="email" type="email" value={formData.email} onChange={handleChange} placeholder="you@example.com"/>
+            </div>
             )}
 
             <div className="space-y-2">
@@ -95,6 +162,8 @@ export default function AuthPage() {
                 <Input
                   id="password"
                   type={showPassword ? "text" : "password"}
+                  value={formData.password}
+                  onChange={handleChange}
                   placeholder="••••••••"
                   required
                 />
@@ -111,7 +180,7 @@ export default function AuthPage() {
             {isRegister && (
               <div className="space-y-2">
                 <Label htmlFor="citizenshipNo">Citizenship Number (Optional)</Label>
-                <Input id="citizenshipNo" placeholder="XX-XX-XX-XXXXX" />
+                <Input id="citizenshipNo" value={formData.citizenshipNo} onChange={handleChange} placeholder="XX-XX-XX-XXXXX" />
               </div>
             )}
 
