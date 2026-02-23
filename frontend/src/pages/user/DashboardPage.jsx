@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import React from "react";
 import { 
   FileText, CheckSquare, Link2, Clock, 
-  ArrowRight, Bell, TrendingUp, User
+  ArrowRight, Bell, TrendingUp, User, ListTodo
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -12,7 +12,6 @@ const quickActions = [
   { title: "Book Appointment", href: "/appointment", icon: CheckSquare, color: "bg-info/10 text-info" },
   { title: "Submit Application", href: "/submit", icon: FileText, color: "bg-success/10 text-success" },
   { title: "Government Portals", href: "/portals", icon: Link2, color: "bg-accent/10 text-accent" },
-  { title: "My Profile", href: "/profile", icon: User, color: "bg-primary/10 text-primary" },
 ];
 
 const recentActivities = [
@@ -56,13 +55,13 @@ export default function DashboardPage() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Recent Applications */}
+        {/* Recent Appointments */}
         <div className="lg:col-span-2">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-4">
               <CardTitle className="text-lg font-semibold font-sans flex items-center gap-2">
                 <TrendingUp className="h-5 w-5 text-primary" />
-                Recent Applications
+                Recent Appointments
               </CardTitle>
               <Button variant="ghost" size="sm" className="text-muted-foreground">
                 View All

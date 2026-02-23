@@ -3,7 +3,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { 
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue 
 } from "@/components/ui/select";
@@ -18,20 +17,20 @@ const steps = [
 ];
 
 export default function SubmitPage() {
-  const [step, setStep] = useState(0);
   const [formData, setFormData] = useState({
-    service: "",
-    fullName: "",
-    email: "",
-    phone: "",
-    address: "",
-    message: "",
-    files: [],
+    user_name: "",
+    citizenship_number: "",
+    province: "",
+    district: "",
+    city: "",
+    office: "",
   });
+  
   const [submitted, setSubmitted] = useState(false);
 
   const updateField = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
+    setErrors((prev) => ({ ...prev, [field]: "" }));
   };
 
   const handleSubmit = () => {
@@ -60,86 +59,63 @@ export default function SubmitPage() {
 
   return (
     <div className="section-container py-8">
-      <div className="max-w-3xl mx-auto">
+      <div className="max-w-2xl mx-auto">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">Submit Application</h1>
-          <p className="text-muted-foreground">Complete the form to submit your application.</p>
-        </div>
-
-        {/* Progress Steps */}
-        <div className="flex items-center gap-2 mb-8 overflow-x-auto pb-2">
-          {steps.map((s, i) => (
-            <div key={i} className="flex items-center gap-2 min-w-fit">
-              <div className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold shrink-0 ${
-                i < step ? "bg-success text-success-foreground" :
-                i === step ? "bg-primary text-primary-foreground" :
-                "bg-muted text-muted-foreground"
-              }`}>
-                {i < step ? "✓" : i + 1}
-              </div>
-              <span className={`text-sm whitespace-nowrap ${i === step ? "font-medium" : "text-muted-foreground"}`}>
-                {s.title}
-              </span>
-              {i < steps.length - 1 && <div className="w-8 h-px bg-border shrink-0" />}
-            </div>
-          ))}
+          <h1 className="text-3xl font-bold mb-2">Book an Appointment</h1>
+          <p className="text-muted-foreground">Fill in your details to schedule an appointment</p>
         </div>
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg font-sans">{steps[step].description}</CardTitle>
+            <CardTitle>Appointment Details</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
-            {step === 0 && (
-              <div className="space-y-2">
-                <Label>Select Service</Label>
-                <Select value={formData.service} onValueChange={(v) => updateField("service", v)}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Choose a government service" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="citizenship">Citizenship Certificate</SelectItem>
-                    <SelectItem value="passport">Passport Application</SelectItem>
-                    <SelectItem value="driving">Driving License</SelectItem>
-                    <SelectItem value="land">Land Registration</SelectItem>
-                    <SelectItem value="business">Business Registration</SelectItem>
-                    <SelectItem value="birth">Birth Certificate</SelectItem>
-                    <SelectItem value="marriage">Marriage Certificate</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            )}
+          <CardContent>
+            <form onSubmit={handleSubmit} className="space-y-6">
+              {apiError && (
+                <div className="flex gap-3 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
+                  <AlertCircle className="h-5 w-5 flex-shrink-0 mt-0.5" />
+                  <p className="text-sm">{apiError}</p>
+                </div>
+              )}
 
-            {step === 1 && (
-              <>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label>Full Name</Label>
-                    <Input value={formData.fullName} onChange={(e) => updateField("fullName", e.target.value)} placeholder="Enter full name" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Email</Label>
-                    <Input type="email" value={formData.email} onChange={(e) => updateField("email", e.target.value)} placeholder="you@example.com" />
-                  </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="user_name">Full Name *</Label>
+                  <Input
+                    id="user_name"
+                    value={formData.user_name}
+                    onChange={(e) => updateField("user_name", e.target.value)}
+                    placeholder="Enter your full name"
+                    className={errors.user_name ? "border-red-500" : ""}
+                  />
+                  {errors.user_name && (
+                    <p className="text-sm text-red-500">{errors.user_name}</p>
+                  )}
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label>Phone</Label>
-                    <Input type="tel" value={formData.phone} onChange={(e) => updateField("phone", e.target.value)} placeholder="+977-98XXXXXXXX" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Address</Label>
-                    <Input value={formData.address} onChange={(e) => updateField("address", e.target.value)} placeholder="District, Municipality" />
-                  </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="citizenship_number">Citizenship Number *</Label>
+                  <Input
+                    id="citizenship_number"
+                    value={formData.citizenship_number}
+                    onChange={(e) => updateField("citizenship_number", e.target.value)}
+                    placeholder="e.g., 123-45-67890"
+                    className={errors.citizenship_number ? "border-red-500" : ""}
+                  />
+                  {errors.citizenship_number && (
+                    <p className="text-sm text-red-500">{errors.citizenship_number}</p>
+                  )}
                 </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>Additional Notes</Label>
                   <Textarea value={formData.message} onChange={(e) => updateField("message", e.target.value)} placeholder="Any additional information..." rows={3} />
                 </div>
-              </>
-            )}
-
-            {step === 2 && (
+              </div>
+  
+            {steps === 2 && (
               <div className="space-y-4">
                 <div className="border-2 border-dashed border-border rounded-xl p-8 text-center">
                   <Upload className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
@@ -158,38 +134,73 @@ export default function SubmitPage() {
               </div>
             )}
 
-            {step === 3 && (
-              <div className="space-y-3">
-                <div className="rounded-lg bg-muted/50 p-4 space-y-2 text-sm">
-                  <div className="flex justify-between"><span className="text-muted-foreground">Service:</span><span className="font-medium capitalize">{formData.service || "—"}</span></div>
-                  <div className="flex justify-between"><span className="text-muted-foreground">Name:</span><span className="font-medium">{formData.fullName || "—"}</span></div>
-                  <div className="flex justify-between"><span className="text-muted-foreground">Email:</span><span className="font-medium">{formData.email || "—"}</span></div>
-                  <div className="flex justify-between"><span className="text-muted-foreground">Phone:</span><span className="font-medium">{formData.phone || "—"}</span></div>
-                  <div className="flex justify-between"><span className="text-muted-foreground">Address:</span><span className="font-medium">{formData.address || "—"}</span></div>
+            <div className="space-y-2">
+                  <Label htmlFor="district">District *</Label>
+                  <Input
+                    id="district"
+                    value={formData.district}
+                    onChange={(e) => updateField("district", e.target.value)}
+                    placeholder="Enter district name"
+                    className={errors.district ? "border-red-500" : ""}
+                  />
+                  {errors.district && (
+                    <p className="text-sm text-red-500">{errors.district}</p>
+                  )}
                 </div>
-                <p className="text-xs text-muted-foreground">
-                  By submitting, you confirm that the information provided is accurate and complete.
-                </p>
-              </div>
-            )}
 
-            <div className="flex justify-between pt-4">
-              <Button variant="outline" onClick={() => setStep(step - 1)} disabled={step === 0} className="gap-2">
-                <ArrowLeft className="h-4 w-4" />
-                Back
-              </Button>
-              {step < steps.length - 1 ? (
-                <Button onClick={() => setStep(step + 1)} className="gap-2">
-                  Next
-                  <ArrowRight className="h-4 w-4" />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="city">City *</Label>
+                  <Input
+                    id="city"
+                    value={formData.city}
+                    onChange={(e) => updateField("city", e.target.value)}
+                    placeholder="Enter city name"
+                    className={errors.city ? "border-red-500" : ""}
+                  />
+                  {errors.city && (
+                    <p className="text-sm text-red-500">{errors.city}</p>
+                  )}
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="office">Office *</Label>
+                  <Select value={formData.office} onValueChange={(v) => updateField("office", v)}>
+                    <SelectTrigger className={errors.office ? "border-red-500" : ""}>
+                      <SelectValue placeholder="Select Office" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="kathmandu">Kathmandu Office</SelectItem>
+                      <SelectItem value="pokhara">Pokhara Office</SelectItem>
+                      <SelectItem value="dharan">Dharan Office</SelectItem>
+                      <SelectItem value="biratnagar">Biratnagar Office</SelectItem>
+                      <SelectItem value="butwal">Butwal Office</SelectItem>
+                      <SelectItem value="birgunj">Birgunj Office</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  {errors.office && (
+                    <p className="text-sm text-red-500">{errors.office}</p>
+                  )}
+                </div>
+              </div>
+
+              <div className="flex gap-3 pt-4">
+                <Button 
+                  type="submit" 
+                  className="flex-1"
+                  disabled={loading}
+                >
+                  {loading ? "Submitting..." : "Submit Appointment"}
                 </Button>
-              ) : (
-                <Button onClick={handleSubmit} className="gap-2">
-                  Submit Application
-                  <CheckCircle2 className="h-4 w-4" />
+                <Button 
+                  type="button" 
+                  variant="outline"
+                  onClick={handleReset}
+                >
+                  Clear
                 </Button>
-              )}
-            </div>
+              </div>
+            </form>
           </CardContent>
         </Card>
       </div>

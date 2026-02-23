@@ -1,0 +1,16 @@
+{
+  "status": "success",
+  "document_type": "driving_license",
+  "extracted_data": {
+    "license_number": "1245789",
+    "full_name": "Sujan Bhusal",
+    "date_of_birth": null,
+    "license_class": "A",
+    "issued_date": "2018",
+    "validity_date": null,
+    "issuing_authority": null,
+    "gender": "Male",
+    "address": "Ekantakuna",
+    "document_type": "driving_license"
+  }
+}
