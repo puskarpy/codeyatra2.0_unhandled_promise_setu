@@ -63,7 +63,7 @@ export default function LandingPage() {
                 </Button>
               </Link>
               <Link to="/portals">
-                <Button size="lg" variant="outline" className="gap-2 text-base border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/10 hover:text-primary-foreground">
+                <Button size="lg" variant="secondary" className="gap-2 font-semibold text-base px-8">
                   Explore Services
                 </Button>
               </Link>
