@@ -1,0 +1,105 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Appointments</title>
+    <link rel="stylesheet" href="{% static 'css/admin-dashboard.css' %}">
+</head>
+<body>
+    <!-- Login Modal -->
+    <div id="loginModal" class="modal" style="display: flex;">
+        <div class="modal-content">
+            <h2>Admin Login</h2>
+            <div class="login-form">
+                <div className="form-group">
+                    <label for="loginEmail">Email</label>
+                    <input type="email" id="loginEmail" placeholder="Enter your email" />
+                </div>
+                <div className="form-group">
+                    <label for="loginPassword">Password</label>
+                    <input type="password" id="loginPassword" placeholder="Enter your password" />
+                </div>
+                <div id="loginError" style="color: red; display: none; margin: 10px 0;"></div>
+                <button id="loginBtn" class="btn btn-primary">Login</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="dashboardContent" style="display: none;">
+        <div class="container">
+            <header class="header">
+                <h1>Appointment Management Dashboard</h1>
+                <div class="logout-container">
+                    <button id="logoutBtn" class="btn btn-logout">Logout</button>
+                </div>
+            </header>
+
+            <div class="filters-section">
+                <h3>Filters</h3>
+                <div class="filter-group">
+                    <label for="filterOffice">Office:</label>
+                    <select id="filterOffice">
+                        <option value="">All Offices</option>
+                        <option value="kathmandu">Kathmandu</option>
+                        <option value="pokhara">Pokhara</option>
+                        <option value="dharan">Dharan</option>
+                        <option value="biratnagar">Biratnagar</option>
+                        <option value="butwal">Butwal</option>
+                        <option value="birgunj">Birgunj</option>
+                    </select>
+
+                    <label for="filterDate">From Date:</label>
+                    <input type="date" id="filterDate">
+
+                    <button id="filterBtn" class="btn btn-filter">Apply Filters</button>
+                    <button id="clearFilterBtn" class="btn btn-secondary">Clear Filters</button>
+                </div>
+            </div>
+
+            <div class="loading-spinner" id="loadingSpinner" style="display: none;">
+                <div class="spinner"></div>
+                <p>Loading appointments...</p>
+            </div>
+
+            <div id="appointmentsContainer" class="appointments-container">
+                <table class="appointments-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Citizenship #</th>
+                            <th>Province</th>
+                            <th>District</th>
+                            <th>City</th>
+                            <th>Office</th>
+                            <th>Submitted At</th>
+                            <th>QR Code</th>
+                        </tr>
+                    </thead>
+                    <tbody id="appointmentsTableBody">
+                        <tr>
+                            <td colspan="9" class="no-data">No appointments found</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Modal for QR Code Display -->
+            <div id="qrCodeModal" class="modal" style="display: none;">
+                <div class="modal-content">
+                    <span class="close">&times;</span>
+                    <h2>Appointment QR Code</h2>
+                    <div class="modal-body">
+                        <img id="modalQrCode" src="" alt="QR Code" class="modal-qr-code">
+                        <a id="downloadQrBtn" href="#" download class="btn btn-primary">Download QR Code</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="{% static 'js/admin-dashboard.js' %}"></script>
+</body>
+</html>
