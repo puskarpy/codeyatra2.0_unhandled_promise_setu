@@ -1,4 +1,4 @@
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { 
   LayoutDashboard, FileText, CheckSquare, Link2, 
@@ -23,7 +23,15 @@ export function Navbar() {
   const isAuth = location.pathname === "/auth";
   const isLanding = location.pathname === "/";
 
-  if (isAuth) return null;
+  // Check if user is authenticated by checking localStorage
+  const isLoggedIn = Boolean(localStorage.getItem("access"));
+
+  // Logout handler
+  const handleLogout = () => {
+    localStorage.removeItem("access");
+    localStorage.removeItem("refresh");
+    navigate("/auth");
+  };
 
   return (
     <header className="sticky top-0 z-50 border-b bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80">
@@ -73,10 +81,12 @@ export function Navbar() {
             </>
           ) : (
             <>
-              <Button variant="ghost" size="sm" className="hidden md:flex items-center gap-2 text-muted-foreground">
-                <LogOut className="h-4 w-4" />
-                Logout
-              </Button>
+              {isLoggedIn && (
+                <Button variant="ghost" size="sm" className="hidden md:flex items-center gap-2 text-muted-foreground" onClick={handleLogout}>
+                  <LogOut className="h-4 w-4" />
+                  Logout
+                </Button>
+              )}
               <Button
                 variant="ghost"
                 size="icon"
@@ -114,13 +124,17 @@ export function Navbar() {
                 </Link>
               );
             })}
-            <Button variant="ghost" size="sm" className="justify-start gap-3 mt-2 text-muted-foreground">
-              <LogOut className="h-4 w-4" />
-              Logout
-            </Button>
+            {isLoggedIn && (
+              <Button variant="ghost" size="sm" className="justify-start gap-3 mt-2 text-muted-foreground" onClick={handleLogout}>
+                <LogOut className="h-4 w-4" />
+                Logout
+              </Button>
+            )}
           </nav>
         </div>
       )}
     </header>
   );
-}
+};
+
+export default Navbar;
