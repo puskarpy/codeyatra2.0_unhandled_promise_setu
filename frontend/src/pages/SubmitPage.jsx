@@ -9,6 +9,7 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue 
 } from "@/components/ui/select";
 import { CheckCircle2, Upload, ArrowLeft, ArrowRight, FileText } from "lucide-react";
+import DynamicMockForm from "@/components/DynamicMockForm";
 
 const steps = [
   { title: "Service Selection", description: "Choose the service you need" },
@@ -54,6 +55,7 @@ export default function SubmitPage() {
     const token = localStorage.getItem("access");
     const formDataObj = new FormData();
     formDataObj.append("file", file);
+    formDataObj.append("document_type", formData.documentType || "");
     try {
       const res = await axios.post("/api/documents/scan/", formDataObj, {
         headers: {
@@ -86,43 +88,29 @@ export default function SubmitPage() {
   // Handles final form submission (mock)
   const handleSubmit = async () => {
     setSubmitted(true);
+    setViewMockForm(true);
   };
 
   if (submitted && !viewMockForm) {
-    return (
-      <div className="section-container py-16 text-center animate-fade-in">
-        <div className="max-w-md mx-auto">
-          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-success/10 mx-auto mb-6">
-            <CheckCircle2 className="h-8 w-8 text-success" />
-          </div>
-          <h1 className="text-2xl font-bold mb-3">Application Submitted!</h1>
-          <p className="text-muted-foreground mb-2">
-            Your application has been submitted successfully. Reference number:
-          </p>
-          <p className="text-lg font-mono font-bold text-primary mb-6">SETU-2026-00421</p>
-          <Button onClick={() => { setSubmitted(false); setStep(0); }} variant="outline">
-            Submit Another Application
-          </Button>
-          <Button onClick={() => setViewMockForm(true)} variant="secondary" className="ml-2">
-            View Mock Form
-          </Button>
-        </div>
-      </div>
-    );
+    // Skip success screen, show mock form directly
+    return null;
   }
 
   if (viewMockForm) {
     return (
       <div className="section-container py-16 animate-fade-in">
         <div className="max-w-lg mx-auto bg-white rounded shadow p-8">
-          <h2 className="text-2xl font-bold mb-6">Mock Form Data</h2>
-          <div className="space-y-4">
-            <div><b>Service:</b> {formData.service || "—"}</div>
-            <div><b>Full Name:</b> {formData.fullName || "—"}</div>
-            <div><b>Email:</b> {formData.email || "—"}</div>
-            <div><b>Phone:</b> {formData.phone || "—"}</div>
-            <div><b>Address:</b> {formData.address || "—"}</div>
-            <div><b>Additional Notes:</b> {formData.message || "—"}</div>
+          <DynamicMockForm
+            ocrResponse={scanResult}
+            onSubmit={data => {
+              // You can send data to backend here or log it
+              console.log("Confirmed Data:", data);
+              setViewMockForm(false);
+              setSubmitted(false);
+              setStep(0);
+            }}
+          />
+          <div className="mt-6">
             <div><b>Uploaded File:</b> {formData.files.length > 0 ? formData.files[0].name : "—"}</div>
             {imagePreviewUrl && (
               <div className="mt-4">
@@ -131,9 +119,6 @@ export default function SubmitPage() {
               </div>
             )}
           </div>
-          <Button onClick={() => { setViewMockForm(false); setSubmitted(false); setStep(0); }} variant="outline" className="mt-6">
-            Back to Form
-          </Button>
         </div>
       </div>
     );
@@ -222,6 +207,20 @@ export default function SubmitPage() {
 
             {step === 2 && (
               <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label>Document Type</Label>
+                  <Select value={formData.documentType || ""} onValueChange={v => updateField("documentType", v)}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select document type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="citizenship">Citizenship Card</SelectItem>
+                      <SelectItem value="passport">Passport</SelectItem>
+                      <SelectItem value="pan">PAN Card</SelectItem>
+                      <SelectItem value="driving_license">Driving License</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
                 <div className="border-2 border-dashed border-border rounded-xl p-8 text-center">
                   <Upload className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
                   <p className="font-medium mb-1">Upload Document</p>

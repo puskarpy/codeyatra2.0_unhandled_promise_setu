@@ -1,0 +1,19 @@
+{
+  "status": "success",
+  "document_type": "passport",
+  "extracted_data": {
+    "document_type": "passport",
+    "passport_number": null,
+    "surname": "BHUSAL",
+    "given_names": null,
+    "nationality": "Zuihaat #.",
+    "date_of_birth": null,
+    "date_of_issue": null,
+    "date_of_expiry": null,
+    "sex": null,
+    "place_of_birth": "Jr W WT@4",
+    "issuing_authority": "ARGHAKHANCHI",
+    "personal_number": null,
+    "country_code": null
+  }
+}
