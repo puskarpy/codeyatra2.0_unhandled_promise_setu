@@ -24,6 +24,7 @@ class Question(models.Model):
 		return f"Q: {self.text} ({self.form_template.name})"
 
 class FormSubmission(models.Model):
+	id = models.AutoField(primary_key=True)
 	form_template = models.ForeignKey(FormTemplate, on_delete=models.CASCADE, related_name='submissions')
 	user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='form_submissions')
 	submitted_at = models.DateTimeField(auto_now_add=True)

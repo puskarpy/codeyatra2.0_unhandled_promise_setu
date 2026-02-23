@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { 
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue 
 } from "@/components/ui/select";
-import { CheckCircle2, Upload, ArrowLeft, ArrowRight, FileText } from "lucide-react";
+import { CheckCircle2, Upload, ArrowLeft, ArrowRight, FileText, Eye } from "lucide-react";
 import DynamicMockForm from "@/components/DynamicMockForm";
 
 const steps = [
@@ -32,7 +32,9 @@ export default function SubmitPage() {
   const [submitted, setSubmitted] = useState(false);
   const [scanResult, setScanResult] = useState(null);
   const [viewMockForm, setViewMockForm] = useState(false);
+  const [showFormPreview, setShowFormPreview] = useState(false);
   const fileInputRef = useRef();
+  const mockFormRef = useRef();
   const [imagePreviewUrl, setImagePreviewUrl] = useState(null);
 
   const updateField = (field, value) => {
@@ -88,37 +90,57 @@ export default function SubmitPage() {
   // Handles final form submission (mock)
   const handleSubmit = async () => {
     setSubmitted(true);
-    setViewMockForm(true);
   };
 
-  if (submitted && !viewMockForm) {
-    // Skip success screen, show mock form directly
-    return null;
-  }
+  // Handle preview button click - show form and scroll
+  const handlePreviewForm = () => {
+    setShowFormPreview(true);
+    setTimeout(() => {
+      mockFormRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 100);
+  };
+
+  // Handle mock form submission
+  const handleMockFormSubmit = (data) => {
+    console.log("Confirmed Data:", data);
+    setShowFormPreview(false);
+    setSubmitted(false);
+    setViewMockForm(false);
+    setScanResult(null);
+    setStep(0);
+    setFormData({
+      service: "",
+      fullName: "",
+      email: "",
+      phone: "",
+      address: "",
+      message: "",
+      files: [],
+    });
+  };
 
   if (viewMockForm) {
     return (
       <div className="section-container py-16 animate-fade-in">
         <div className="max-w-lg mx-auto bg-white rounded shadow p-8">
-          <DynamicMockForm
-            ocrResponse={scanResult}
-            onSubmit={data => {
-              // You can send data to backend here or log it
-              console.log("Confirmed Data:", data);
-              setViewMockForm(false);
-              setSubmitted(false);
-              setStep(0);
-            }}
-          />
-          <div className="mt-6">
-            <div><b>Uploaded File:</b> {formData.files.length > 0 ? formData.files[0].name : "—"}</div>
+          <h3 className="text-lg font-semibold mb-4">Review Extracted Data</h3>
+          <div className="mb-6">
+            <p className="text-sm text-muted-foreground mb-3">
+              Please review and confirm the extracted information:
+            </p>
             {imagePreviewUrl && (
-              <div className="mt-4">
-                <b>Image Preview:</b>
-                <img src={imagePreviewUrl} alt="Uploaded Preview" style={{ maxWidth: "100%", borderRadius: "8px", marginTop: "8px" }} />
+              <div className="mb-4">
+                <p className="text-sm font-medium mb-2">Submitted Image:</p>
+                <img src={imagePreviewUrl} alt="Uploaded Preview" style={{ maxWidth: "100%", borderRadius: "8px", maxHeight: "300px", objectFit: "contain" }} />
               </div>
             )}
           </div>
+          <DynamicMockForm
+            ocrResponse={scanResult}
+            useDynamicFields={true}
+            onSubmit={handleMockFormSubmit}
+            ref={mockFormRef}
+          />
         </div>
       </div>
     );
@@ -254,14 +276,41 @@ export default function SubmitPage() {
                 {scanResult && (
                   <div className="mt-4 p-4 rounded bg-muted/50 text-left">
                     {scanResult.error ? (
-                      <div className="text-red-600">{scanResult.error}</div>
+                      <div className="text-red-600 text-sm font-medium mb-3">{scanResult.error}</div>
                     ) : (
                       <>
-                        <div className="font-semibold mb-2">Extracted Data:</div>
-                        <pre className="text-xs whitespace-pre-wrap break-all bg-background p-2 rounded border border-border">
-                          {JSON.stringify(scanResult.extracted_data, null, 2)}
-                        </pre>
-                        <div className="font-semibold mt-2">Document Type: <span className="capitalize">{scanResult.document_type}</span></div>
+                        <div className="text-sm mb-3">
+                          <div className="font-semibold text-green-600 mb-2">✓ Document processed successfully!</div>
+                          <div className="font-semibold mb-2">Document Type: <span className="capitalize text-primary">{scanResult.document_type}</span></div>
+                          <div className="text-xs text-muted-foreground mb-3">
+                            Extracted {Object.keys(scanResult.extracted_data || {}).length} fields from your document.
+                          </div>
+                        </div>
+                        <Button
+                          onClick={handlePreviewForm}
+                          className="w-full gap-2 mb-3"
+                          size="sm"
+                        >
+                          <Eye className="h-4 w-4" />
+                          Preview Mock Form
+                        </Button>
+                        {showFormPreview && (
+                          <div ref={mockFormRef} className="mt-4 p-4 bg-white border border-border rounded-lg">
+                            <DynamicMockForm
+                              ocrResponse={scanResult}
+                              useDynamicFields={true}
+                              onSubmit={handleMockFormSubmit}
+                            />
+                          </div>
+                        )}
+                        <div className="mt-3 pt-3 border-t border-border">
+                          <details className="text-xs">
+                            <summary className="cursor-pointer font-medium text-muted-foreground hover:text-foreground">View Raw Extracted Data</summary>
+                            <pre className="text-xs whitespace-pre-wrap break-all bg-background p-2 rounded border border-border mt-2 max-h-32 overflow-auto">
+                              {JSON.stringify(scanResult.extracted_data, null, 2)}
+                            </pre>
+                          </details>
+                        </div>
                       </>
                     )}
                   </div>

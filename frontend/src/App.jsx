@@ -10,6 +10,7 @@ import AuthPage from "./pages/AuthPage";
 import DashboardPage from "./pages/DashboardPage";
 import EligibilityPage from "./pages/EligibilityPage";
 import SubmitPage from "./pages/SubmitPage";
+import GuidedFormsPage from "./pages/GuidedFormsPage";
 import PortalsPage from "./pages/PortalsPage";
 import ProfilePage from "./pages/ProfilePage";
 import NotFound from "./pages/NotFound";
@@ -31,6 +32,7 @@ const App = () => (
               <Route path="/dashboard" element={<DashboardPage />} />
               <Route path="/eligibility" element={<EligibilityPage />} />
               <Route path="/submit" element={<SubmitPage />} />
+              <Route path="/guided-forms" element={<GuidedFormsPage />} />
               <Route path="/portals" element={<PortalsPage />} />
               <Route path="/profile" element={<ProfilePage />} />
               <Route path="*" element={<NotFound />} />

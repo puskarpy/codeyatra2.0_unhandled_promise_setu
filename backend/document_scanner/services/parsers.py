@@ -176,5 +176,100 @@ def parse_pan(text):
     return {}
 
 def parse_driving_license(text):
-    # Implement similar to above, with driving license-specific fields
-    return {}
+    """
+    Parse Nepali driving license text for required fields.
+    Returns dict with license_number, full_name, dob, license_class, validity_date, etc.
+    """
+    data = {}
+    
+    # License Number patterns
+    license_patterns = [
+        r"License No[:\s]+([A-Za-z0-9\-/]+)",
+        r"License Number[:\s]+([A-Za-z0-9\-/]+)",
+        r"लाइसेन्स नं[:\s]+([\w\d\-/]+)"
+    ]
+    
+    # Name patterns
+    name_patterns = [
+        r"Name[:\s]+([A-Za-z .]+)",
+        r"नाम[:\s]+([\u0900-\u097F A-Za-z.]+)"
+    ]
+    
+    # Date of Birth patterns
+    dob_patterns = [
+        r"Date of Birth[:\s]+([\d\-/०१२३४५६७८९]+)",
+        r"जन्म मिति[:\s]+([\d\-/०१२३४५६७८९]+)",
+        r"DOB[:\s]+([\d\-/०१२३४५६७८९]+)"
+    ]
+    
+    # License Class/Type patterns
+    class_patterns = [
+        r"Class[:\s]+([A-Za-z0-9/\-]+)",
+        r"License Class[:\s]+([A-Za-z0-9/\-]+)",
+        r"वर्ग[:\s]+([\u0900-\u097F A-Za-z0-9/\-]+)"
+    ]
+    
+    # Issued Date patterns
+    issued_patterns = [
+        r"Issued Date[:\s]+([\d\-/०१२३४५६७८९]+)",
+        r"Issued[:\s]+([\d\-/०१२३४५६७८९]+)",
+        r"जारी मिति[:\s]+([\d\-/०१२३४५६७८९]+)"
+    ]
+    
+    # Validity/Expiry Date patterns
+    validity_patterns = [
+        r"Validity[:\s]+([\d\-/०१२३४५६७८९]+)",
+        r"Valid Till[:\s]+([\d\-/०१२३४५६७८९]+)",
+        r"Expiry[:\s]+([\d\-/०१२३४५६७८९]+)",
+        r"वैधता[:\s]+([\d\-/०१२३४५६७८९]+)"
+    ]
+    
+    # Issuing Authority patterns
+    issuer_patterns = [
+        r"Issued By[:\s]+([A-Za-z\s]+)",
+        r"Issuing Authority[:\s]+([A-Za-z\s]+)"
+    ]
+    
+    # Gender patterns
+    gender_patterns = [
+        r"Gender[:\s]+(Male|Female|Other|M|F)",
+        r"लिङ्ग[:\s]+(पुरुष|महिला|अन्य)"
+    ]
+    
+    # Address patterns
+    address_patterns = [
+        r"Address[:\s]+([A-Za-z0-9\s\-,]+)",
+        r"पता[:\s]+([\u0900-\u097F A-Za-z0-9\s\-,]+)"
+    ]
+    
+    def search_patterns(patterns):
+        for pat in patterns:
+            m = re.search(pat, text, re.I)
+            if m:
+                return m.group(1).strip()
+        return None
+    
+    data['license_number'] = search_patterns(license_patterns)
+    data['full_name'] = search_patterns(name_patterns)
+    data['date_of_birth'] = search_patterns(dob_patterns)
+    data['license_class'] = search_patterns(class_patterns)
+    data['issued_date'] = search_patterns(issued_patterns)
+    data['validity_date'] = search_patterns(validity_patterns)
+    data['issuing_authority'] = search_patterns(issuer_patterns)
+    data['gender'] = search_patterns(gender_patterns)
+    data['address'] = search_patterns(address_patterns)
+    data['document_type'] = 'driving_license'
+    
+    # Normalize dates
+    nepali_to_eng = str.maketrans('०१२३४५६७८९', '0123456789')
+    for date_field in ['date_of_birth', 'issued_date', 'validity_date']:
+        if data[date_field]:
+            dob = data[date_field].translate(nepali_to_eng)
+            for fmt in ("%Y-%m-%d", "%d-%m-%Y", "%d/%m/%Y", "%Y/%m/%d"):
+                try:
+                    data[date_field] = datetime.strptime(dob, fmt).strftime("%Y-%m-%d")
+                    break
+                except Exception:
+                    continue
+    
+    return data

@@ -2,7 +2,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { 
   LayoutDashboard, FileText, CheckSquare, Link2, 
-  User, LogOut, Menu, X 
+  User, LogOut, Menu, X, ListTodo
 } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -11,6 +11,7 @@ const navItems = [
   { title: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { title: "Eligibility Checker", href: "/eligibility", icon: CheckSquare },
   { title: "Submit Application", href: "/submit", icon: FileText },
+  { title: "Guided Forms", href: "/guided-forms", icon: ListTodo },
   { title: "Government Portals", href: "/portals", icon: Link2 },
   { title: "Profile", href: "/profile", icon: User },
 ];

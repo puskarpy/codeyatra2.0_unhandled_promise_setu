@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { 
   FileText, CheckSquare, Link2, Clock, 
-  ArrowRight, Bell, TrendingUp, User
+  ArrowRight, Bell, TrendingUp, User, ListTodo
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,8 +10,8 @@ import { Progress } from "@/components/ui/progress";
 const quickActions = [
   { title: "Check Eligibility", href: "/eligibility", icon: CheckSquare, color: "bg-info/10 text-info" },
   { title: "Submit Application", href: "/submit", icon: FileText, color: "bg-success/10 text-success" },
+  { title: "Guided Forms", href: "/guided-forms", icon: ListTodo, color: "bg-warning/10 text-warning" },
   { title: "Government Portals", href: "/portals", icon: Link2, color: "bg-accent/10 text-accent" },
-  { title: "My Profile", href: "/profile", icon: User, color: "bg-primary/10 text-primary" },
 ];
 
 const recentActivities = [

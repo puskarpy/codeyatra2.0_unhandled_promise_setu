@@ -3,12 +3,12 @@
 // Supports citizenship, passport, pan, driving_license
 // Receives OCR response as props, renders fields, allows editing, and handles submission
 
-import { useState } from "react";
+import { useState, forwardRef } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 
-// Field configuration for each document type
+// Field configuration for each document type (fallback)
 export const FORM_CONFIG = {
   citizenship: [
     { name: "full_name", label: "Full Name" },
@@ -38,15 +38,50 @@ export const FORM_CONFIG = {
   ],
 };
 
+// Utility function to convert field names to labels
+function fieldNameToLabel(name) {
+  return name
+    .replace(/_/g, " ")
+    .replace(/([a-z])([A-Z])/g, "$1 $2")
+    .replace(/\b\w/g, l => l.toUpperCase());
+}
+
+// Utility function to detect if field is date-like
+function isDateField(name, value) {
+  return (
+    name.toLowerCase().includes("date") ||
+    name.toLowerCase().includes("dob") ||
+    (typeof value === "string" && /^\d{4}-\d{2}-\d{2}/.test(value))
+  );
+}
+
 /**
  * DynamicMockForm
- * @param {object} props - { ocrResponse, onSubmit }
+ * @param {object} props - { ocrResponse, onSubmit, useDynamicFields }
  * ocrResponse: { status, document_type, extracted_data }
  * onSubmit: function to handle final data
+ * useDynamicFields: bool, if true use all extracted_data fields, else use FORM_CONFIG
  */
-export default function DynamicMockForm({ ocrResponse, onSubmit }) {
+const DynamicMockForm = forwardRef(function DynamicMockForm(
+  { ocrResponse, onSubmit, useDynamicFields = true },
+  ref
+) {
   const { document_type, extracted_data } = ocrResponse || {};
-  const fields = FORM_CONFIG[document_type] || [];
+
+  // Determine fields: use dynamic fields from extracted_data if useDynamicFields is true
+  let fields = [];
+  if (useDynamicFields && extracted_data && typeof extracted_data === "object") {
+    // Generate fields dynamically from extracted_data
+    fields = Object.entries(extracted_data).map(([name, value]) => ({
+      name,
+      label: fieldNameToLabel(name),
+      type: isDateField(name, value) ? "date" : "text",
+    }));
+  } else {
+    // Fall back to predefined config
+    fields = FORM_CONFIG[document_type] || [];
+  }
+
   // Initialize form state with extracted data or empty
   const [formState, setFormState] = useState(() => {
     const initial = {};
@@ -83,22 +118,27 @@ export default function DynamicMockForm({ ocrResponse, onSubmit }) {
   if (!document_type) return <div>No document type detected.</div>;
 
   return (
-    <form className="space-y-4" onSubmit={handleSubmit}>
+    <form ref={ref} className="space-y-4" onSubmit={handleSubmit}>
       <h2 className="text-xl font-bold mb-4">{document_type.replace(/_/g, " ").toUpperCase()} Mock Form</h2>
-      {fields.map(f => (
-        <div key={f.name} className="space-y-1">
-          <Label htmlFor={f.name}>{f.label}</Label>
-          <Input
-            id={f.name}
-            value={formState[f.name]}
-            onChange={e => handleChange(f.name, e.target.value)}
-            placeholder={f.label}
-            autoComplete="off"
-          />
-          {errors[f.name] && <div className="text-red-500 text-xs">{errors[f.name]}</div>}
-        </div>
-      ))}
+      <div className="grid grid-cols-1 gap-4">
+        {fields.map(f => (
+          <div key={f.name} className="space-y-1">
+            <Label htmlFor={f.name}>{f.label}</Label>
+            <Input
+              id={f.name}
+              type={f.type || "text"}
+              value={formState[f.name]}
+              onChange={e => handleChange(f.name, e.target.value)}
+              placeholder={f.label}
+              autoComplete="off"
+            />
+            {errors[f.name] && <div className="text-red-500 text-xs">{errors[f.name]}</div>}
+          </div>
+        ))}
+      </div>
       <Button type="submit" className="mt-4">Submit</Button>
     </form>
   );
-}
+});
+
+export default DynamicMockForm;

@@ -4,17 +4,38 @@
 services/ocr.py for document_scanner app
 Provides OCR utilities for extracting text from images and PDFs, and document type detection, using EasyOCR.
 """
-import easyocr
-from PIL import Image
-from pdf2image import convert_from_path
-import cv2
-import numpy as np
+try:
+    import easyocr
+    EASYOCR_AVAILABLE = True
+except ImportError:
+    EASYOCR_AVAILABLE = False
+
+try:
+    from pdf2image import convert_from_path
+    PDF2IMAGE_AVAILABLE = True
+except ImportError:
+    PDF2IMAGE_AVAILABLE = False
+
+try:
+    from PIL import Image
+    PIL_AVAILABLE = True
+except ImportError:
+    PIL_AVAILABLE = False
+
+try:
+    import cv2
+    import numpy as np
+    CV2_AVAILABLE = True
+except ImportError:
+    CV2_AVAILABLE = False
 
 # Nepali: 'ne', English: 'en'
-reader = easyocr.Reader(['en'])
+reader = easyocr.Reader(['en']) if EASYOCR_AVAILABLE else None
 
 def preprocess_image(path):
     """Preprocess image for OCR: grayscale, binarize, denoise, deskew."""
+    if not CV2_AVAILABLE:
+        raise ImportError("OpenCV is not installed. Please install it to use OCR features.")
     img = cv2.imread(path)
     if img is None:
         raise ValueError("Image not found or unreadable.")
@@ -38,6 +59,8 @@ def preprocess_image(path):
 def extract_text_from_image(path):
     """Extract text from an image file using EasyOCR after preprocessing."""
     try:
+        if not EASYOCR_AVAILABLE:
+            raise ImportError("EasyOCR is not installed. Please install it to use OCR features.")
         processed = preprocess_image(path)
         temp_path = path + "_processed.png"
         cv2.imwrite(temp_path, processed)
@@ -56,6 +79,10 @@ def extract_text_from_image(path):
 def extract_text_from_pdf(path):
     """Extract text from a PDF file by converting each page to image and running OCR with EasyOCR."""
     try:
+        if not EASYOCR_AVAILABLE:
+            raise ImportError("EasyOCR is not installed. Please install it to use OCR features.")
+        if not PDF2IMAGE_AVAILABLE:
+            raise ImportError("pdf2image is not installed. Please install it to process PDFs.")
         images = convert_from_path(path)
         all_text = []
         for i, img in enumerate(images):
