@@ -1,146 +1,155 @@
-import { useState, useRef } from "react";
+import { useState } from "react";
 import axios from "../api";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { 
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue 
 } from "@/components/ui/select";
-import { CheckCircle2, Upload, ArrowLeft, ArrowRight, FileText, Eye } from "lucide-react";
-import DynamicMockForm from "@/components/DynamicMockForm";
-
-const steps = [
-  { title: "Service Selection", description: "Choose the service you need" },
-  { title: "Personal Details", description: "Provide your information" },
-  { title: "Documents", description: "Upload required documents" },
-  { title: "Review & Submit", description: "Confirm and submit" },
-];
+import { CheckCircle2, AlertCircle } from "lucide-react";
 
 export default function SubmitPage() {
-  const [step, setStep] = useState(0);
   const [formData, setFormData] = useState({
-    service: "",
-    fullName: "",
-    email: "",
-    phone: "",
-    address: "",
-    message: "",
-    files: [],
+    user_name: "",
+    citizenship_number: "",
+    province: "",
+    district: "",
+    city: "",
+    office: "",
   });
+  
   const [submitted, setSubmitted] = useState(false);
-  const [scanResult, setScanResult] = useState(null);
-  const [viewMockForm, setViewMockForm] = useState(false);
-  const [showFormPreview, setShowFormPreview] = useState(false);
-  const fileInputRef = useRef();
-  const mockFormRef = useRef();
-  const [imagePreviewUrl, setImagePreviewUrl] = useState(null);
+  const [qrCode, setQrCode] = useState(null);
+  const [errors, setErrors] = useState({});
+  const [loading, setLoading] = useState(false);
+  const [apiError, setApiError] = useState(null);
 
   const updateField = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
+    setErrors((prev) => ({ ...prev, [field]: "" }));
   };
 
-  // Handles file upload and document scan
-  const handleFileChange = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    updateField("files", [file]);
-    setScanResult(null);
-    // Set image preview if file is image
-    if (file.type.startsWith("image/")) {
-      setImagePreviewUrl(URL.createObjectURL(file));
-    } else {
-      setImagePreviewUrl(null);
+  const validateForm = () => {
+    const newErrors = {};
+    
+    if (!formData.user_name || formData.user_name.trim().length < 2) {
+      newErrors.user_name = "Name must be at least 2 characters";
     }
-    // Scan document immediately after file selection
-    const token = localStorage.getItem("access");
-    const formDataObj = new FormData();
-    formDataObj.append("file", file);
-    formDataObj.append("document_type", formData.documentType || "");
+    if (!formData.citizenship_number || formData.citizenship_number.trim().length < 5) {
+      newErrors.citizenship_number = "Invalid citizenship number";
+    }
+    if (!formData.province) {
+      newErrors.province = "Please select a province";
+    }
+    if (!formData.district || formData.district.trim().length < 2) {
+      newErrors.district = "District must be at least 2 characters";
+    }
+    if (!formData.city || formData.city.trim().length < 2) {
+      newErrors.city = "City must be at least 2 characters";
+    }
+    if (!formData.office) {
+      newErrors.office = "Please select an office";
+    }
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setApiError(null);
+    
+    if (!validateForm()) {
+      return;
+    }
+
+    setLoading(true);
     try {
-      const res = await axios.post("/api/documents/scan/", formDataObj, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "multipart/form-data",
-        },
-      });
-      setScanResult(res.data);
-      // Mock autofill: try to fill form fields from OCR result
-      let ocrText = "";
-      if (typeof res.data === "string") {
-        ocrText = res.data;
-      } else if (res.data && res.data.extracted_data) {
-        ocrText = JSON.stringify(res.data.extracted_data);
-      }
-      if (ocrText) {
-        // Example: try to extract name, email, phone from OCR text
-        const nameMatch = ocrText.match(/Name[:\s]+([A-Za-z ]+)/i);
-        const emailMatch = ocrText.match(/Email[:\s]+([\w.-]+@[\w.-]+)/i);
-        const phoneMatch = ocrText.match(/Phone[:\s]+([+\d-]+)/i);
-        updateField("fullName", nameMatch ? nameMatch[1].trim() : "");
-        updateField("email", emailMatch ? emailMatch[1].trim() : "");
-        updateField("phone", phoneMatch ? phoneMatch[1].trim() : "");
-      }
+      const response = await axios.post("/api/appointments/", formData);
+      setQrCode(response.data.qr_code_url);
+      setSubmitted(true);
     } catch (err) {
-      setScanResult({ error: err.response?.data?.detail || err.message });
+      setApiError(err.response?.data?.detail || "Failed to submit appointment");
+    } finally {
+      setLoading(false);
     }
   };
 
-  // Handles final form submission (mock)
-  const handleSubmit = async () => {
-    setSubmitted(true);
-  };
-
-  // Handle preview button click - show form and scroll
-  const handlePreviewForm = () => {
-    setShowFormPreview(true);
-    setTimeout(() => {
-      mockFormRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-    }, 100);
-  };
-
-  // Handle mock form submission
-  const handleMockFormSubmit = (data) => {
-    console.log("Confirmed Data:", data);
-    setShowFormPreview(false);
-    setSubmitted(false);
-    setViewMockForm(false);
-    setScanResult(null);
-    setStep(0);
+  const handleReset = () => {
     setFormData({
-      service: "",
-      fullName: "",
-      email: "",
-      phone: "",
-      address: "",
-      message: "",
-      files: [],
+      user_name: "",
+      citizenship_number: "",
+      province: "",
+      district: "",
+      city: "",
+      office: "",
     });
+    setSubmitted(false);
+    setQrCode(null);
+    setErrors({});
+    setApiError(null);
   };
 
-  if (viewMockForm) {
+  if (submitted) {
     return (
-      <div className="section-container py-16 animate-fade-in">
-        <div className="max-w-lg mx-auto bg-white rounded shadow p-8">
-          <h3 className="text-lg font-semibold mb-4">Review Extracted Data</h3>
-          <div className="mb-6">
-            <p className="text-sm text-muted-foreground mb-3">
-              Please review and confirm the extracted information:
-            </p>
-            {imagePreviewUrl && (
-              <div className="mb-4">
-                <p className="text-sm font-medium mb-2">Submitted Image:</p>
-                <img src={imagePreviewUrl} alt="Uploaded Preview" style={{ maxWidth: "100%", borderRadius: "8px", maxHeight: "300px", objectFit: "contain" }} />
+      <div className="section-container py-16">
+        <div className="max-w-lg mx-auto">
+          <Card className="text-center">
+            <CardHeader className="pb-4">
+              <div className="flex justify-center mb-4">
+                <CheckCircle2 className="h-16 w-16 text-green-600" />
               </div>
-            )}
-          </div>
-          <DynamicMockForm
-            ocrResponse={scanResult}
-            useDynamicFields={true}
-            onSubmit={handleMockFormSubmit}
-            ref={mockFormRef}
-          />
+              <CardTitle className="text-2xl">Appointment Submitted!</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div>
+                <p className="text-muted-foreground mb-4">
+                  Your appointment has been confirmed. Scan the QR code below to access your appointment details.
+                </p>
+              </div>
+
+              {qrCode && (
+                <div className="flex justify-center">
+                  <div className="p-4 bg-white border-2 border-border rounded-lg">
+                    <img 
+                      src={qrCode} 
+                      alt="Appointment QR Code" 
+                      className="w-48 h-48"
+                    />
+                  </div>
+                </div>
+              )}
+
+              <div className="bg-muted/50 p-4 rounded-lg text-left text-sm space-y-2">
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Name:</span>
+                  <span className="font-medium">{formData.user_name}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Citizenship #:</span>
+                  <span className="font-medium">{formData.citizenship_number}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Office:</span>
+                  <span className="font-medium capitalize">
+                    {formData.office.replace('-', ' ')}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">City:</span>
+                  <span className="font-medium">{formData.city}</span>
+                </div>
+              </div>
+
+              <Button 
+                onClick={handleReset} 
+                className="w-full"
+              >
+                Book Another Appointment
+              </Button>
+            </CardContent>
+          </Card>
         </div>
       </div>
     );
@@ -148,211 +157,144 @@ export default function SubmitPage() {
 
   return (
     <div className="section-container py-8">
-      <div className="max-w-3xl mx-auto">
+      <div className="max-w-2xl mx-auto">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">Submit Application</h1>
-          <p className="text-muted-foreground">Complete the form to submit your application.</p>
-        </div>
-
-        {/* Progress Steps */}
-        <div className="flex items-center gap-2 mb-8 overflow-x-auto pb-2">
-          {steps.map((s, i) => (
-            <div key={i} className="flex items-center gap-2 min-w-fit">
-              <div className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold shrink-0 ${
-                i < step ? "bg-success text-success-foreground" :
-                i === step ? "bg-primary text-primary-foreground" :
-                "bg-muted text-muted-foreground"
-              }`}>
-                {i < step ? "✓" : i + 1}
-              </div>
-              <span className={`text-sm whitespace-nowrap ${i === step ? "font-medium" : "text-muted-foreground"}`}>
-                {s.title}
-              </span>
-              {i < steps.length - 1 && <div className="w-8 h-px bg-border shrink-0" />}
-            </div>
-          ))}
+          <h1 className="text-3xl font-bold mb-2">Book an Appointment</h1>
+          <p className="text-muted-foreground">Fill in your details to schedule an appointment</p>
         </div>
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg font-sans">{steps[step].description}</CardTitle>
+            <CardTitle>Appointment Details</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
-            {step === 0 && (
-              <div className="space-y-2">
-                <Label>Select Service</Label>
-                <Select value={formData.service} onValueChange={(v) => updateField("service", v)}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Choose a government service" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="citizenship">Citizenship Certificate</SelectItem>
-                    <SelectItem value="passport">Passport Application</SelectItem>
-                    <SelectItem value="driving">Driving License</SelectItem>
-                    <SelectItem value="land">Land Registration</SelectItem>
-                    <SelectItem value="business">Business Registration</SelectItem>
-                    <SelectItem value="birth">Birth Certificate</SelectItem>
-                    <SelectItem value="marriage">Marriage Certificate</SelectItem>
-                  </SelectContent>
-                </Select>
+          <CardContent>
+            <form onSubmit={handleSubmit} className="space-y-6">
+              {apiError && (
+                <div className="flex gap-3 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
+                  <AlertCircle className="h-5 w-5 flex-shrink-0 mt-0.5" />
+                  <p className="text-sm">{apiError}</p>
+                </div>
+              )}
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="user_name">Full Name *</Label>
+                  <Input
+                    id="user_name"
+                    value={formData.user_name}
+                    onChange={(e) => updateField("user_name", e.target.value)}
+                    placeholder="Enter your full name"
+                    className={errors.user_name ? "border-red-500" : ""}
+                  />
+                  {errors.user_name && (
+                    <p className="text-sm text-red-500">{errors.user_name}</p>
+                  )}
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="citizenship_number">Citizenship Number *</Label>
+                  <Input
+                    id="citizenship_number"
+                    value={formData.citizenship_number}
+                    onChange={(e) => updateField("citizenship_number", e.target.value)}
+                    placeholder="e.g., 123-45-67890"
+                    className={errors.citizenship_number ? "border-red-500" : ""}
+                  />
+                  {errors.citizenship_number && (
+                    <p className="text-sm text-red-500">{errors.citizenship_number}</p>
+                  )}
+                </div>
               </div>
-            )}
 
-            {step === 1 && (
-              <>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label>Full Name</Label>
-                    <Input value={formData.fullName} onChange={(e) => updateField("fullName", e.target.value)} placeholder="Enter full name" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Email</Label>
-                    <Input type="email" value={formData.email} onChange={(e) => updateField("email", e.target.value)} placeholder="you@example.com" />
-                  </div>
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label>Phone</Label>
-                    <Input type="tel" value={formData.phone} onChange={(e) => updateField("phone", e.target.value)} placeholder="+977-98XXXXXXXX" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Address</Label>
-                    <Input value={formData.address} onChange={(e) => updateField("address", e.target.value)} placeholder="District, Municipality" />
-                  </div>
-                </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label>Additional Notes</Label>
-                  <Textarea value={formData.message} onChange={(e) => updateField("message", e.target.value)} placeholder="Any additional information..." rows={3} />
-                </div>
-              </>
-            )}
-
-            {step === 2 && (
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label>Document Type</Label>
-                  <Select value={formData.documentType || ""} onValueChange={v => updateField("documentType", v)}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select document type" />
+                  <Label htmlFor="province">Province *</Label>
+                  <Select value={formData.province} onValueChange={(v) => updateField("province", v)}>
+                    <SelectTrigger className={errors.province ? "border-red-500" : ""}>
+                      <SelectValue placeholder="Select Province" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="citizenship">Citizenship Card</SelectItem>
-                      <SelectItem value="passport">Passport</SelectItem>
-                      <SelectItem value="pan">PAN Card</SelectItem>
-                      <SelectItem value="driving_license">Driving License</SelectItem>
+                      <SelectItem value="bagmati">Bagmati</SelectItem>
+                      <SelectItem value="gandaki">Gandaki</SelectItem>
+                      <SelectItem value="karnali">Karnali</SelectItem>
+                      <SelectItem value="koshi">Koshi</SelectItem>
+                      <SelectItem value="madhesh">Madhesh</SelectItem>
+                      <SelectItem value="rasuwa">Rasuwa</SelectItem>
                     </SelectContent>
                   </Select>
-                </div>
-                <div className="border-2 border-dashed border-border rounded-xl p-8 text-center">
-                  <Upload className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
-                  <p className="font-medium mb-1">Upload Document</p>
-                  <p className="text-sm text-muted-foreground mb-4">
-                    Drag & drop or click to upload (PDF, JPG, PNG up to 10MB)
-                  </p>
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept=".pdf,image/*"
-                    style={{ display: "none" }}
-                    onChange={handleFileChange}
-                  />
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => fileInputRef.current && fileInputRef.current.click()}
-                  >
-                    <FileText className="h-4 w-4 mr-2" />
-                    Browse Files
-                  </Button>
-                  {formData.files.length > 0 && (
-                    <div className="mt-2 text-xs text-muted-foreground">
-                      Selected: {formData.files[0].name}
-                    </div>
+                  {errors.province && (
+                    <p className="text-sm text-red-500">{errors.province}</p>
                   )}
-                  <div className="mt-4 text-xs text-warning-foreground">
-                    <b>Note:</b> If submitting a <b>citizenship certificate</b>, both the front and back must be in the <b>same image</b>.
-                  </div>
                 </div>
-                {scanResult && (
-                  <div className="mt-4 p-4 rounded bg-muted/50 text-left">
-                    {scanResult.error ? (
-                      <div className="text-red-600 text-sm font-medium mb-3">{scanResult.error}</div>
-                    ) : (
-                      <>
-                        <div className="text-sm mb-3">
-                          <div className="font-semibold text-green-600 mb-2">✓ Document processed successfully!</div>
-                          <div className="font-semibold mb-2">Document Type: <span className="capitalize text-primary">{scanResult.document_type}</span></div>
-                          <div className="text-xs text-muted-foreground mb-3">
-                            Extracted {Object.keys(scanResult.extracted_data || {}).length} fields from your document.
-                          </div>
-                        </div>
-                        <Button
-                          onClick={handlePreviewForm}
-                          className="w-full gap-2 mb-3"
-                          size="sm"
-                        >
-                          <Eye className="h-4 w-4" />
-                          Preview Mock Form
-                        </Button>
-                        {showFormPreview && (
-                          <div ref={mockFormRef} className="mt-4 p-4 bg-white border border-border rounded-lg">
-                            <DynamicMockForm
-                              ocrResponse={scanResult}
-                              useDynamicFields={true}
-                              onSubmit={handleMockFormSubmit}
-                            />
-                          </div>
-                        )}
-                        <div className="mt-3 pt-3 border-t border-border">
-                          <details className="text-xs">
-                            <summary className="cursor-pointer font-medium text-muted-foreground hover:text-foreground">View Raw Extracted Data</summary>
-                            <pre className="text-xs whitespace-pre-wrap break-all bg-background p-2 rounded border border-border mt-2 max-h-32 overflow-auto">
-                              {JSON.stringify(scanResult.extracted_data, null, 2)}
-                            </pre>
-                          </details>
-                        </div>
-                      </>
-                    )}
-                  </div>
-                )}
-                <p className="text-xs text-muted-foreground">
-                  Required: Citizenship copy, recent passport-size photo, supporting documents.
-                </p>
-              </div>
-            )}
 
-            {step === 3 && (
-              <div className="space-y-3">
-                <div className="rounded-lg bg-muted/50 p-4 space-y-2 text-sm">
-                  <div className="flex justify-between"><span className="text-muted-foreground">Service:</span><span className="font-medium capitalize">{formData.service || "—"}</span></div>
-                  <div className="flex justify-between"><span className="text-muted-foreground">Name:</span><span className="font-medium">{formData.fullName || "—"}</span></div>
-                  <div className="flex justify-between"><span className="text-muted-foreground">Email:</span><span className="font-medium">{formData.email || "—"}</span></div>
-                  <div className="flex justify-between"><span className="text-muted-foreground">Phone:</span><span className="font-medium">{formData.phone || "—"}</span></div>
-                  <div className="flex justify-between"><span className="text-muted-foreground">Address:</span><span className="font-medium">{formData.address || "—"}</span></div>
+                <div className="space-y-2">
+                  <Label htmlFor="district">District *</Label>
+                  <Input
+                    id="district"
+                    value={formData.district}
+                    onChange={(e) => updateField("district", e.target.value)}
+                    placeholder="Enter district name"
+                    className={errors.district ? "border-red-500" : ""}
+                  />
+                  {errors.district && (
+                    <p className="text-sm text-red-500">{errors.district}</p>
+                  )}
                 </div>
-                <p className="text-xs text-muted-foreground">
-                  By submitting, you confirm that the information provided is accurate and complete.
-                </p>
               </div>
-            )}
 
-            <div className="flex justify-between pt-4">
-              <Button variant="outline" onClick={() => setStep(step - 1)} disabled={step === 0} className="gap-2">
-                <ArrowLeft className="h-4 w-4" />
-                Back
-              </Button>
-              {step < steps.length - 1 ? (
-                <Button onClick={() => setStep(step + 1)} className="gap-2">
-                  Next
-                  <ArrowRight className="h-4 w-4" />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="city">City *</Label>
+                  <Input
+                    id="city"
+                    value={formData.city}
+                    onChange={(e) => updateField("city", e.target.value)}
+                    placeholder="Enter city name"
+                    className={errors.city ? "border-red-500" : ""}
+                  />
+                  {errors.city && (
+                    <p className="text-sm text-red-500">{errors.city}</p>
+                  )}
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="office">Office *</Label>
+                  <Select value={formData.office} onValueChange={(v) => updateField("office", v)}>
+                    <SelectTrigger className={errors.office ? "border-red-500" : ""}>
+                      <SelectValue placeholder="Select Office" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="kathmandu">Kathmandu Office</SelectItem>
+                      <SelectItem value="pokhara">Pokhara Office</SelectItem>
+                      <SelectItem value="dharan">Dharan Office</SelectItem>
+                      <SelectItem value="biratnagar">Biratnagar Office</SelectItem>
+                      <SelectItem value="butwal">Butwal Office</SelectItem>
+                      <SelectItem value="birgunj">Birgunj Office</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  {errors.office && (
+                    <p className="text-sm text-red-500">{errors.office}</p>
+                  )}
+                </div>
+              </div>
+
+              <div className="flex gap-3 pt-4">
+                <Button 
+                  type="submit" 
+                  className="flex-1"
+                  disabled={loading}
+                >
+                  {loading ? "Submitting..." : "Submit Appointment"}
                 </Button>
-              ) : (
-                <Button onClick={handleSubmit} className="gap-2">
-                  Submit Application
-                  <CheckCircle2 className="h-4 w-4" />
+                <Button 
+                  type="button" 
+                  variant="outline"
+                  onClick={handleReset}
+                >
+                  Clear
                 </Button>
-              )}
-            </div>
+              </div>
+            </form>
           </CardContent>
         </Card>
       </div>

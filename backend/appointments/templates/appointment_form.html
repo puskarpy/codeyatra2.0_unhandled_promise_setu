@@ -1,0 +1,92 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Appointment Booking System</title>
+    <link rel="stylesheet" href="{% static 'css/appointment.css' %}">
+</head>
+<body>
+    <div class="container">
+        <div class="form-wrapper">
+            <h1>Book an Appointment</h1>
+            <form id="appointmentForm">
+                <div class="form-group">
+                    <label for="userName">Full Name *</label>
+                    <input type="text" id="userName" name="userName" required placeholder="Enter your full name">
+                    <span class="error-message" id="userNameError"></span>
+                </div>
+
+                <div class="form-group">
+                    <label for="citizenshipNumber">Citizenship Number *</label>
+                    <input type="text" id="citizenshipNumber" name="citizenshipNumber" required placeholder="e.g., 123-45-67890">
+                    <span class="error-message" id="citizenshipNumberError"></span>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="province">Province *</label>
+                        <select id="province" name="province" required>
+                            <option value="">Select Province</option>
+                            <option value="bagmati">Bagmati</option>
+                            <option value="gandaki">Gandaki</option>
+                            <option value="karnali">Karnali</option>
+                            <option value="koshi">Koshi</option>
+                            <option value="madhesh">Madhesh</option>
+                            <option value="rasuwa">Rasuwa</option>
+                        </select>
+                        <span class="error-message" id="provinceError"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="district">District *</label>
+                        <input type="text" id="district" name="district" required placeholder="Enter district name">
+                        <span class="error-message" id="districtError"></span>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="city">City *</label>
+                        <input type="text" id="city" name="city" required placeholder="Enter city name">
+                        <span class="error-message" id="cityError"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="office">Office *</label>
+                        <select id="office" name="office" required>
+                            <option value="">Select Office</option>
+                            <option value="kathmandu">Kathmandu Office</option>
+                            <option value="pokhara">Pokhara Office</option>
+                            <option value="dharan">Dharan Office</option>
+                            <option value="biratnagar">Biratnagar Office</option>
+                            <option value="butwal">Butwal Office</option>
+                            <option value="birgunj">Birgunj Office</option>
+                        </select>
+                        <span class="error-message" id="officeError"></span>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary">Submit Appointment</button>
+                <span class="error-message" id="formError"></span>
+            </form>
+
+            <div id="successContainer" class="success-container" style="display: none;">
+                <div class="success-message">
+                    <h2>✓ Appointment Submitted Successfully!</h2>
+                    <p>Your appointment has been confirmed. Scan the QR code below to access your appointment details.</p>
+                </div>
+                
+                <div class="qr-code-container">
+                    <img id="qrCodeImage" src="" alt="Appointment QR Code" class="qr-code">
+                </div>
+
+                <button id="resetBtn" class="btn btn-secondary">Book Another Appointment</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="{% static 'js/appointment-form.js' %}"></script>
+</body>
+</html>

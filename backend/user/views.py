@@ -21,20 +21,39 @@ class LoginView(APIView):
 	permission_classes = [permissions.AllowAny]
 	def post(self, request):
 		email = request.data.get('email')
+		phone = request.data.get('phone')
 		password = request.data.get('password')
+		
+		# Support login by email or phone
+		user = None
 		try:
-			user = User.objects.get(email=email)
-			if user.check_password(password):
-				refresh = RefreshToken.for_user(user)
-				LoginAttempt.objects.create(user=user, successful=True)
-				return Response({
-					'refresh': str(refresh),
-					'access': str(refresh.access_token),
-				})
+			if email:
+				user = User.objects.get(email=email)
+			elif phone:
+				user = User.objects.get(phone=phone)
 			else:
-				LoginAttempt.objects.create(user=user, successful=False)
-				return Response({'detail': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
+				return Response({'detail': 'Email or phone required'}, status=status.HTTP_400_BAD_REQUEST)
 		except User.DoesNotExist:
+			return Response({'detail': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
+		
+		# Check password
+		if user and user.check_password(password):
+			refresh = RefreshToken.for_user(user)
+			LoginAttempt.objects.create(user=user, successful=True)
+			return Response({
+				'refresh': str(refresh),
+				'access': str(refresh.access_token),
+				'user': {
+					'id': user.id,
+					'email': user.email,
+					'username': user.username,
+					'is_staff': user.is_staff,
+					'is_office_admin': user.is_office_admin
+				}
+			})
+		else:
+			if user:
+				LoginAttempt.objects.create(user=user, successful=False)
 			return Response({'detail': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
 
 class RequestOTPView(APIView):

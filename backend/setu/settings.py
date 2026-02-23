@@ -45,7 +45,7 @@ INSTALLED_APPS = [
     'guided_forms',
     'feedback',
     'document_scanner',
-    
+    'appointments',
 ]
 
 MIDDLEWARE = [
@@ -126,6 +126,11 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
 STATIC_URL = 'static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+
+# Media files for uploads
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
 
 # Custom user model
 # Custom user model

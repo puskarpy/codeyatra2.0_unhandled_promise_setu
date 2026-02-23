@@ -22,6 +22,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 	phone = models.CharField(max_length=15, unique=True)
 	email = models.EmailField(max_length=255, unique=True, null=True, blank=True)
 	is_phone_verified = models.BooleanField(default=False)
+	is_office_admin = models.BooleanField(default=False)
 	language = models.CharField(max_length=20, default='en')
 	is_active = models.BooleanField(default=True)
 	is_staff = models.BooleanField(default=False)
