@@ -70,7 +70,23 @@ export default function SubmitPage() {
       setQrCode(response.data.qr_code_url);
       setSubmitted(true);
     } catch (err) {
-      setApiError(err.response?.data?.detail || "Failed to submit appointment");
+      console.error("Appointment error:", err.response?.data);
+      // Format error message from backend
+      let errorMessage = "Failed to submit appointment";
+      const errorData = err.response?.data;
+      
+      if (typeof errorData === 'object') {
+        const errors = [];
+        Object.keys(errorData).forEach(key => {
+          const messages = Array.isArray(errorData[key]) ? errorData[key] : [errorData[key]];
+          errors.push(`${key}: ${messages.join(', ')}`);
+        });
+        errorMessage = errors.join('; ') || errorMessage;
+      } else if (errorData?.error) {
+        errorMessage = errorData.error;
+      }
+      
+      setApiError(errorMessage);
     } finally {
       setLoading(false);
     }

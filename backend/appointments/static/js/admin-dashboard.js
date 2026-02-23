@@ -1,7 +1,15 @@
 // Configuration
 const API_BASE_URL = 'http://localhost:8000/api/appointments';
+const LOGIN_URL = 'http://localhost:8000/api/user/login/';
 
 // DOM Elements
+const loginModal = document.getElementById('loginModal');
+const dashboardContent = document.getElementById('dashboardContent');
+const loginEmailInput = document.getElementById('loginEmail');
+const loginPasswordInput = document.getElementById('loginPassword');
+const loginBtn = document.getElementById('loginBtn');
+const loginError = document.getElementById('loginError');
+
 const appointmentsTableBody = document.getElementById('appointmentsTableBody');
 const loadingSpinner = document.getElementById('loadingSpinner');
 const filterBtn = document.getElementById('filterBtn');
@@ -18,12 +26,13 @@ const downloadQrBtn = document.getElementById('downloadQrBtn');
 let allAppointments = [];
 let filteredAppointments = [];
 
-// Get token from localStorage (if using JWT)
+// Get token from localStorage
 function getToken() {
     return localStorage.getItem('token') || localStorage.getItem('access_token');
 }
 
 // Event Listeners
+loginBtn.addEventListener('click', handleLogin);
 filterBtn.addEventListener('click', applyFilters);
 clearFilterBtn.addEventListener('click', clearFilters);
 logoutBtn.addEventListener('click', handleLogout);
@@ -34,21 +43,95 @@ qrCodeModal.addEventListener('click', (e) => {
     }
 });
 
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+        closeModal();
+    }
+});
+
+// Allow login with Enter key
+loginPasswordInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+        handleLogin();
+    }
+});
+
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
-    checkAuth();
-    loadAppointments();
+    const token = getToken();
+    if (token) {
+        showDashboard();
+        loadAppointments();
+    }
 });
 
 /**
- * Check if user is authenticated
+ * Handle admin login
  */
-function checkAuth() {
-    const token = getToken();
-    if (!token) {
-        // Redirect to login if needed
-        console.log('No token found. User should login first.');
+async function handleLogin() {
+    const email = loginEmailInput.value.trim();
+    const password = loginPasswordInput.value.trim();
+    
+    if (!email || !password) {
+        loginError.textContent = 'Please enter email and password';
+        loginError.style.display = 'block';
+        return;
     }
+
+    loginBtn.disabled = true;
+    loginBtn.textContent = 'Logging in...';
+    loginError.style.display = 'none';
+
+    try {
+        const response = await fetch(LOGIN_URL, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                email: email,
+                password: password,
+            }),
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.detail || 'Login failed');
+        }
+
+        const data = await response.json();
+        
+        // Check if user is admin
+        if (!data.user || !data.user.is_office_admin) {
+            throw new Error('Only admin users can access this dashboard');
+        }
+
+        // Store token
+        localStorage.setItem('access_token', data.access);
+        if (data.refresh) {
+            localStorage.setItem('refresh_token', data.refresh);
+        }
+
+        // Show dashboard
+        showDashboard();
+        loadAppointments();
+
+    } catch (error) {
+        loginError.textContent = error.message || 'Login failed';
+        loginError.style.display = 'block';
+        console.error('Login error:', error);
+    } finally {
+        loginBtn.disabled = false;
+        loginBtn.textContent = 'Login';
+    }
+}
+
+/**
+ * Show dashboard and hide login
+ */
+function showDashboard() {
+    loginModal.style.display = 'none';
+    dashboardContent.style.display = 'block';
 }
 
 /**
@@ -78,7 +161,8 @@ async function loadAppointments() {
         }
 
         if (!response.ok) {
-            throw new Error('Failed to load appointments');
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.detail || `Failed to load appointments (${response.status})`);
         }
 
         allAppointments = await response.json();
@@ -183,8 +267,16 @@ function closeModal() {
 function handleLogout() {
     localStorage.removeItem('token');
     localStorage.removeItem('access_token');
-    alert('Logged out successfully');
-    window.location.href = '/auth/login/'; // Redirect to login page
+    localStorage.removeItem('refresh_token');
+    
+    // Clear form and error
+    loginEmailInput.value = '';
+    loginPasswordInput.value = '';
+    loginError.style.display = 'none';
+    
+    // Show login modal and hide dashboard
+    loginModal.style.display = 'flex';
+    dashboardContent.style.display = 'none';
 }
 
 /**

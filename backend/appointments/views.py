@@ -25,17 +25,24 @@ class AppointmentViewSet(viewsets.ModelViewSet):
     def create(self, request, *args, **kwargs):
         """Create a new appointment with QR code generation"""
         serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
         
-        # Create appointment
-        appointment = serializer.save()
+        if not serializer.is_valid():
+            print(f"Validation errors: {serializer.errors}")
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
-        # Generate QR code
-        appointment = generate_qr_code(appointment)
-        
-        # Return appointment data with QR code
-        response_serializer = AppointmentSerializer(appointment, context={'request': request})
-        return Response(response_serializer.data, status=status.HTTP_201_CREATED)
+        try:
+            # Create appointment
+            appointment = serializer.save()
+            
+            # Generate QR code
+            appointment = generate_qr_code(appointment)
+            
+            # Return appointment data with QR code
+            response_serializer = AppointmentSerializer(appointment, context={'request': request})
+            return Response(response_serializer.data, status=status.HTTP_201_CREATED)
+        except Exception as e:
+            print(f"Error creating appointment: {str(e)}")
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
     @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated])
     def list_all(self, request):
